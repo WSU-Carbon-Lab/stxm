@@ -1,0 +1,17 @@
+uv.lock
+src/stxm/__pycache__/__init__.cpython-313.pyc
+src/stxm/__pycache__/__init__.cpython-314.pyc
+src/stxm/__pycache__/absorption.cpython-313.pyc
+src/stxm/__pycache__/experiment.cpython-313.pyc
+src/stxm/__pycache__/io.cpython-313.pyc
+src/stxm/__pycache__/io.cpython-314.pyc
+src/stxm/__pycache__/nexafs.cpython-313.pyc
+src/stxm/__pycache__/normalization.cpython-313.pyc
+src/stxm/__pycache__/regions.cpython-313.pyc
+src/stxm/__pycache__/ui_panel.cpython-313.pyc
+src/stxm/__pycache__/ui.cpython-313.pyc
+src/stxm.egg-info/dependency_links.txt
+src/stxm.egg-info/PKG-INFO
+src/stxm.egg-info/requires.txt
+src/stxm.egg-info/SOURCES.txt
+src/stxm.egg-info/top_level.txt

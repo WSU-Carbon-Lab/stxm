@@ -1,0 +1,33 @@
+[build-system]
+requires = ["setuptools>=61", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "stxm"
+version = "0.1.0"
+description = "STXM line-scan toolkit: load .hdr/.xim, region selection, Beer-Lambert NEXAFS, mass absorption, experiment parquet"
+readme = "README.md"
+requires-python = ">=3.13"
+dependencies = [
+    "numpy",
+    "pandas",
+    "matplotlib",
+    "ipywidgets",
+    "periodictable",
+    "pyarrow",
+    "scikit-image>=0.26.0",
+    "scikit-learn>=1.8.0",
+    "panel>=1.8.9",
+    "holoviews>=1.22.1",
+    "hvplot>=0.12.2",
+    "jupyter-bokeh>=4.0.5",
+    "ipywidgets-bokeh>=1.6.0",
+]
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[dependency-groups]
+dev = [
+    "ruff>=0.15.6",
+]
