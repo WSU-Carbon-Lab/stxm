@@ -1,26 +1,16 @@
 import numpy as np
 
+from stxm.estimators import WeightingMode, region_mean_and_sigma
+
 
 def _weighted_mean_and_sigma(
     values_2d: np.ndarray,
     mask: np.ndarray,
     eps: float = 1e-10,
 ) -> tuple[np.ndarray, np.ndarray, int]:
-    n_energy = values_2d.shape[1]
-    mean_out = np.zeros(n_energy)
-    sigma_out = np.zeros(n_energy)
-    for j in range(n_energy):
-        col = values_2d[:, j]
-        vals = col[mask]
-        vals = np.maximum(vals, eps)
-        if vals.size == 0:
-            mean_out[j] = np.nan
-            sigma_out[j] = np.nan
-            continue
-        w = 1.0 / vals
-        mean_out[j] = np.sum(vals * w) / np.sum(w)
-        sigma_out[j] = 1.0 / np.sqrt(np.sum(w))
-    return mean_out, sigma_out, int(np.sum(mask))
+    return region_mean_and_sigma(
+        values_2d, mask, mode=WeightingMode.INVERSE_COUNT, eps=eps
+    )
 
 
 def nexafs_beer_lambert(
@@ -28,6 +18,7 @@ def nexafs_beer_lambert(
     sample_mask: np.ndarray,
     izero_mask: np.ndarray,
     eps: float = 1e-10,
+    mode: WeightingMode = WeightingMode.POISSON_MLE,
 ) -> tuple[
     np.ndarray, np.ndarray, np.ndarray, np.ndarray, np.ndarray, np.ndarray, int, int
 ]:
@@ -44,6 +35,8 @@ def nexafs_beer_lambert(
         Boolean mask for izero region rows.
     eps : float
         Minimum intensity to avoid log(0).
+    mode : WeightingMode
+        Region averaging strategy forwarded to ``region_mean_and_sigma``.
 
     Returns
     -------
@@ -58,10 +51,14 @@ def nexafs_beer_lambert(
     n_sample, n_izero : int
         Number of pixels in each region.
     """
-    I0, sigma_I0, n_izero = _weighted_mean_and_sigma(image, izero_mask, eps)
-    I, sigma_I, n_sample = _weighted_mean_and_sigma(image, sample_mask, eps)
-    I0 = np.maximum(I0, eps)
-    I = np.maximum(I, eps)
-    od = np.log(I0 / I)
-    sigma_od = np.sqrt((sigma_I0 / I0) ** 2 + (sigma_I / I) ** 2)
-    return od, sigma_od, I0, sigma_I0, I, sigma_I, n_sample, n_izero
+    I0, sigma_I0, n_izero = region_mean_and_sigma(
+        image, izero_mask, mode=mode, eps=eps
+    )
+    i_sample, sigma_i, n_sample = region_mean_and_sigma(
+        image, sample_mask, mode=mode, eps=eps
+    )
+    i0 = np.maximum(I0, eps)
+    i_s = np.maximum(i_sample, eps)
+    od = np.log(i0 / i_s)
+    sigma_od = np.sqrt((sigma_I0 / i0) ** 2 + (sigma_i / i_s) ** 2)
+    return od, sigma_od, i0, sigma_I0, i_s, sigma_i, n_sample, n_izero

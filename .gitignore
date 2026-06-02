@@ -15,3 +15,5 @@ src/stxm.egg-info/PKG-INFO
 src/stxm.egg-info/requires.txt
 src/stxm.egg-info/SOURCES.txt
 src/stxm.egg-info/top_level.txt
+.cursor/hooks/state/continual-learning-index.json
+.cursor/hooks/state/continual-learning.json

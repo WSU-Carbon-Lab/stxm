@@ -17,11 +17,8 @@ dependencies = [
     "pyarrow",
     "scikit-image>=0.26.0",
     "scikit-learn>=1.8.0",
-    "panel>=1.8.9",
-    "holoviews>=1.22.1",
-    "hvplot>=0.12.2",
-    "jupyter-bokeh>=4.0.5",
-    "ipywidgets-bokeh>=1.6.0",
+    "scipy>=1.17.1",
+    "scienceplots>=2.2.1",
 ]
 
 [tool.setuptools.packages.find]
@@ -29,5 +26,16 @@ where = ["src"]
 
 [dependency-groups]
 dev = [
+    "pytest>=9.0.3",
     "ruff>=0.15.6",
 ]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py313"
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP"]

@@ -220,6 +220,115 @@ def is_nexafs_line_scan(hdr_path: str | Path) -> bool:
     return is_nexafs_line_scan_type(hdr_path) and is_valid_line_scan(hdr_path)
 
 
+def _axis_is_energy(name: str) -> bool:
+    lowered = name.lower()
+    return "energy" in lowered or lowered.endswith("ev") or "photon" in lowered
+
+
+def _is_strictly_monotonic(axis: np.ndarray) -> bool:
+    diffs = np.diff(np.asarray(axis, dtype=np.float64).ravel())
+    return bool(diffs.size) and bool(np.all(diffs > 0) or np.all(diffs < 0))
+
+
+def orient_scan(meta: dict, image: np.ndarray) -> tuple[np.ndarray, np.ndarray, np.ndarray]:
+    """
+    Return ``(energy, spatial, image)`` with shape ``(n_spatial, n_energy)``.
+
+    Parameters
+    ----------
+    meta : dict
+        Header dict from ``read_hdr`` with ``paxis_points`` and ``qaxis_points``.
+    image : np.ndarray
+        Raw 2D array from ``load_stxm``.
+
+    Returns
+    -------
+    energy : np.ndarray
+        Energy axis in eV, strictly monotonic.
+    spatial : np.ndarray
+        Spatial axis coordinates, length ``image.shape[0]`` after orientation.
+    image : np.ndarray
+        Oriented intensities ``(n_spatial, n_energy)``.
+
+    Raises
+    ------
+    ValueError
+        If axis sizes disagree with the array or energy is not monotonic.
+    """
+    paxis = np.asarray(meta["paxis_points"], dtype=np.float64)
+    qaxis = np.asarray(meta["qaxis_points"], dtype=np.float64)
+    arr = np.asarray(image, dtype=np.float64)
+    p_name = str(meta.get("paxis_name", "PAxis"))
+    q_name = str(meta.get("qaxis_name", "QAxis"))
+    energy_on_p = _axis_is_energy(p_name)
+    energy_on_q = _axis_is_energy(q_name)
+    if arr.shape == (qaxis.size, paxis.size):
+        spatial, energy = qaxis, paxis
+    elif arr.shape == (paxis.size, qaxis.size):
+        arr = arr.T
+        spatial, energy = qaxis, paxis
+    else:
+        raise ValueError(
+            f"image shape {arr.shape} incompatible with qaxis={qaxis.size} paxis={paxis.size}"
+        )
+    if energy_on_q and not energy_on_p:
+        arr = arr.T
+        spatial, energy = paxis, qaxis
+    if not _is_strictly_monotonic(energy):
+        raise ValueError("energy axis must be strictly monotonic")
+    if arr.shape != (spatial.size, energy.size):
+        raise ValueError("oriented image shape does not match axis lengths")
+    return energy, spatial, arr
+
+
+def spectral_matrix(
+    image: np.ndarray,
+    mask: np.ndarray | None = None,
+    *,
+    use_od: bool = True,
+    eps: float = 1e-10,
+) -> tuple[np.ndarray, tuple[int, int]]:
+    """
+    Flatten an oriented scan to ``(n_pixels, n_energy)``.
+
+    Parameters
+    ----------
+    image : np.ndarray
+        Oriented scan ``(n_spatial, n_energy)``.
+    mask : np.ndarray, optional
+        Boolean spatial mask; all rows used when ``None``.
+    use_od : bool
+        If True, transform to ``-ln(I)``; otherwise use intensities.
+    eps : float
+        Intensity floor when ``use_od`` is True.
+
+    Returns
+    -------
+    X : np.ndarray
+        Data matrix for demixing or regression.
+    spatial_shape : tuple of int
+        ``(n_spatial, 1)`` for reshaping abundances back to a line scan.
+
+    Raises
+    ------
+    ValueError
+        If the mask selects no rows.
+    """
+    arr = np.asarray(image, dtype=np.float64)
+    if mask is None:
+        block = arr
+    else:
+        mask = np.asarray(mask, dtype=bool)
+        if mask.shape != (arr.shape[0],):
+            raise ValueError("mask length must match n_spatial")
+        block = arr[mask, :]
+    if block.size == 0:
+        raise ValueError("mask selects no spatial rows")
+    if use_od:
+        block = -np.log(np.maximum(block, eps))
+    return block, (arr.shape[0], 1)
+
+
 def list_nexafs_line_scans(experiment_path: str | Path) -> list[Path]:
     """
     List .hdr files in the experiment directory that are NEXAFS Line Scan type
