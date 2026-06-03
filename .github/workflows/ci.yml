@@ -16,6 +16,22 @@ jobs:
       - name: Install dependencies
         run: uv sync --all-groups
       - name: Ruff
-        run: uv run ruff check src tests
+        run: uv run ruff check src/python tests
       - name: Pytest
         run: uv run pytest -q
+
+  web:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: oven-sh/setup-bun@v2
+      - name: Install dependencies
+        run: bun install --frozen-lockfile
+      - name: Lint and typecheck
+        run: bun run check
+      - name: Unit tests
+        run: bun test
+      - name: Build
+        env:
+          SKIP_ENV_VALIDATION: "1"
+        run: bun run build

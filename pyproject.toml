@@ -22,7 +22,10 @@ dependencies = [
 ]
 
 [tool.setuptools.packages.find]
-where = ["src"]
+where = ["src/python"]
+
+[project.scripts]
+stxm-bridge = "stxm.bridge:main"
 
 [dependency-groups]
 dev = [

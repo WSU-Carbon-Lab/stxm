@@ -1,4 +1,11 @@
 uv.lock
+node_modules/
+.next/
+out/
+bun.lock
+.env
+src/python/stxm/__pycache__/
+src/python/stxm.egg-info/
 src/stxm/__pycache__/__init__.cpython-313.pyc
 src/stxm/__pycache__/__init__.cpython-314.pyc
 src/stxm/__pycache__/absorption.cpython-313.pyc
@@ -17,3 +24,4 @@ src/stxm.egg-info/SOURCES.txt
 src/stxm.egg-info/top_level.txt
 .cursor/hooks/state/continual-learning-index.json
 .cursor/hooks/state/continual-learning.json
+tmp/

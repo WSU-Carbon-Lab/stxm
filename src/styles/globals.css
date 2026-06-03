@@ -1,0 +1,21 @@
+@import "tailwindcss";
+
+@theme {
+  --font-sans: var(--font-geist-sans), ui-sans-serif, system-ui, sans-serif,
+    "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
+}
+
+.spectrum-plot-host .modebar-container {
+  top: 12px;
+  left: 12px;
+  right: auto !important;
+}
+
+.spectrum-plot-host .modebar-group {
+  margin-left: 6px;
+  padding: 2px;
+}
+
+.spectrum-plot-host .modebar-group:first-child {
+  margin-left: 0;
+}
